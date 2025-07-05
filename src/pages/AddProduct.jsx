@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Check, Plus } from 'lucide-react'; // Removed ChevronLeft
 
 // === CRUCIAL FIX: Updated API_BASE_URL to your deployed backend URL ===
-const API_BASE_URL = 'https://slugma-backend.vercel.app'; 
+const API_BASE_URL = 'https://slugma-backend.vercel.app';
 
 // --- Predefined Data for Select Boxes and Buttons ---
 const CATEGORIES = ['Shoes', 'Watch', 'Perfume', 'Belt', 'Bag'];
