@@ -8,6 +8,9 @@ import Users from './pages/Users';
 import { LogOut } from 'lucide-react';
 import axios from 'axios'; // Import axios
 
+// --- GLOBAL DEBUGGING LOG: This should appear in your browser console when App.jsx loads ---
+console.log('App.jsx (Admin Frontend) loaded and executing. Version with Axios and enhanced debugging.');
+
 // === CRUCIAL FIX: Updated API_BASE_URL to your deployed backend URL ===
 // This URL points to your deployed Node.js backend on Vercel.
 const API_BASE_URL = 'https://slugma-backend.vercel.app'; 
@@ -39,7 +42,7 @@ const AdminLoginPage = ({ onLoginSuccess }) => {
     // --- Debugging logs to confirm request details before sending ---
     console.log('--- Admin Login Attempt (using Axios) ---');
     console.log('API URL:', `${API_BASE_URL}/api/admin/login`);
-    console.log('Request Method: POST'); // Explicitly state the intended method
+    console.log('Request Method: POST (intended)'); // Explicitly state the intended method
     console.log('Payload (username only):', { username }); // Log username, avoid logging password for security
 
     try {
@@ -64,7 +67,7 @@ const AdminLoginPage = ({ onLoginSuccess }) => {
     } catch (err) {
       // Axios errors have a 'response' property for server errors
       console.error('❌ Admin Login Error:', err);
-      if (err.response && err.response.data && err.response.data.message) {
+      if (axios.isAxiosError(err) && err.response && err.response.data && err.response.data.message) {
         setMessage(`❌ ${err.response.data.message}`); // Display backend error message
       } else {
         setMessage(`❌ Login failed: ${err.message || 'Network error'}`); // Display generic error
@@ -127,6 +130,7 @@ const AdminLoginPage = ({ onLoginSuccess }) => {
           <div>
             <button
               type="submit"
+              onClick={handleSubmit} // Added explicit onClick for robustness
               className="w-full flex items-center justify-center py-4 px-6 border border-transparent text-xl font-bold rounded-xl text-white bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 focus:outline-none focus:ring-3 focus:ring-offset-2 focus:ring-blue-500 shadow-lg transition duration-300 ease-in-out transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
               disabled={isSubmitting}
             >
