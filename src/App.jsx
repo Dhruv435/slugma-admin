@@ -8,39 +8,64 @@ import Users from './pages/Users';
 import { LogOut } from 'lucide-react';
 
 // === CRUCIAL FIX: Updated API_BASE_URL to your deployed backend URL ===
-const API_BASE_URL = 'https://slugma-backend.vercel.app'; // <<< This should be your actual deployed backend URL
+// This URL points to your deployed Node.js backend on Vercel.
+const API_BASE_URL = 'https://slugma-backend.vercel.app'; 
 
+/**
+ * AdminLoginPage Component
+ * Handles the login form and authentication for administrators.
+ * It sends a POST request to the backend's admin login endpoint.
+ * @param {object} props - Component props.
+ * @param {function} props.onLoginSuccess - Callback function to run on successful login.
+ */
 const AdminLoginPage = ({ onLoginSuccess }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  /**
+   * Handles the form submission for admin login.
+   * Prevents default form submission to handle it via fetch API.
+   * Sends username and password to the backend.
+   * @param {Event} e - The form submission event.
+   */
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setMessage('');
-    setIsSubmitting(true);
+    e.preventDefault(); // Prevent default form submission which would send a GET request
+    setMessage(''); // Clear any previous messages
+    setIsSubmitting(true); // Set loading state
+
+    // --- Debugging logs to confirm request details before sending ---
+    console.log('--- Admin Login Attempt ---');
+    console.log('API URL:', `${API_BASE_URL}/api/admin/login`);
+    console.log('Request Method: POST'); // Explicitly state the intended method
+    console.log('Payload (username only):', { username }); // Log username, avoid logging password for security
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/admin/login`, {
-        method: 'POST',
+        method: 'POST', // Explicitly set the request method to POST
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username, password }), // Send credentials as JSON
       });
 
-      const result = await response.json();
+      const result = await response.json(); // Parse the JSON response
 
       if (!response.ok) {
+        // If response status is not 2xx, throw an error with the backend message
         throw new Error(result.message || 'Login failed!');
       }
 
-      localStorage.setItem('adminToken', result.token);
-      onLoginSuccess();
+      // On successful login, store token (if any) and call success callback
+      localStorage.setItem('adminToken', result.token); // Store the admin token
+      onLoginSuccess(); // Notify parent component of successful login
+      console.log('✅ Admin login successful!');
+
     } catch (err) {
-      console.error('Admin Login Error:', err);
-      setMessage(`❌ ${err.message}`);
+      // Catch and display any errors during the fetch operation
+      console.error('❌ Admin Login Error:', err);
+      setMessage(`❌ ${err.message}`); // Display error message to the user
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false); // Reset loading state
     }
   };
 
@@ -104,15 +129,28 @@ const AdminLoginPage = ({ onLoginSuccess }) => {
   );
 };
 
+/**
+ * App Component
+ * The main component for the admin dashboard, handling routing and authentication state.
+ */
 const App = () => {
+  // State to manage admin authentication status, initialized from localStorage
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(
     !!localStorage.getItem('adminToken')
   );
 
+  /**
+   * Callback function for successful admin login.
+   * Sets the authentication state to true.
+   */
   const handleAdminLoginSuccess = () => {
     setIsAdminAuthenticated(true);
   };
 
+  /**
+   * Handles admin logout.
+   * Removes the admin token from localStorage and resets authentication state.
+   */
   const handleAdminLogout = () => {
     localStorage.removeItem('adminToken');
     setIsAdminAuthenticated(false);
@@ -121,11 +159,13 @@ const App = () => {
   return (
     <Router>
       <div className="min-h-screen bg-gray-50 flex flex-col font-inter">
+        {/* Header Section */}
         <header className="bg-gradient-to-r from-blue-800 to-purple-900 text-white p-5 shadow-xl">
           <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center">
             <h1 className="text-3xl sm:text-4xl font-extrabold mb-4 sm:mb-0 tracking-wide">
               Admin Dashboard
             </h1>
+            {/* Navigation links visible only when authenticated */}
             {isAdminAuthenticated && (
               <nav className="w-full sm:w-auto">
                 <ul className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-8 items-center">
@@ -144,6 +184,7 @@ const App = () => {
                 </ul>
               </nav>
             )}
+            {/* Login button visible only when not authenticated */}
              {!isAdminAuthenticated && (
                 <a href="/admin/login" className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2.5 px-5 rounded-lg transition-all duration-200 shadow-lg transform hover:scale-105 active:scale-95">
                     Login
@@ -152,39 +193,47 @@ const App = () => {
           </div>
         </header>
 
+        {/* Main Content Area with Routing */}
         <main className="flex-grow p-6 sm:p-8">
           <Routes>
+            {/* Route for Admin Login Page */}
             <Route
               path="/admin/login"
               element={
                 isAdminAuthenticated ? (
+                  // If already authenticated, redirect to admin home
                   <Navigate to="/admin/home" replace />
                 ) : (
+                  // Otherwise, show the AdminLoginPage
                   <AdminLoginPage onLoginSuccess={handleAdminLoginSuccess} />
                 )
               }
             />
 
+            {/* Protected Admin Routes */}
             <Route
-              path="/admin/*"
+              path="/admin/*" // Catch all sub-routes under /admin
               element={
                 isAdminAuthenticated ? (
+                  // If authenticated, render nested admin routes
                   <Routes>
-                    <Route index element={<Navigate to="/admin/home" replace />} />
+                    <Route index element={<Navigate to="/admin/home" replace />} /> {/* Default admin route */}
                     <Route path="home" element={<HomePage />} />
                     <Route path="products" element={<Products />} />
                     <Route path="add-product" element={<AddProduct />} />
-                    <Route path="edit-product/:id" element={<AddProduct />} />
+                    <Route path="edit-product/:id" element={<AddProduct />} /> {/* Route for editing existing products */}
                     <Route path="orders" element={<Orders />} />
                     <Route path="users" element={<Users />} />
-                    <Route path="*" element={<Navigate to="/admin/home" replace />} />
+                    <Route path="*" element={<Navigate to="/admin/home" replace />} /> {/* Fallback for unknown admin paths */}
                   </Routes>
                 ) : (
+                  // If not authenticated, redirect to admin login
                   <Navigate to="/admin/login" replace />
                 )
               }
             />
 
+            {/* Redirect /admin to login if not authenticated, or home if authenticated */}
             <Route path="/admin" element={isAdminAuthenticated ? <Navigate to="/admin/home" replace /> : <Navigate to="/admin/login" replace />} />
           </Routes>
         </main>
