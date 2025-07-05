@@ -9,7 +9,7 @@ import { LogOut } from 'lucide-react';
 import axios from 'axios'; // Import axios
 
 // --- GLOBAL DEBUGGING LOG: This should appear in your browser console when App.jsx loads ---
-console.log('App.jsx (Admin Frontend) loaded and executing. Version with Axios and enhanced debugging.');
+console.log('App.jsx (Admin Frontend) loaded and executing. Version with Axios and MOST AGGRESSIVE POST handling.');
 
 // === CRUCIAL FIX: Updated API_BASE_URL to your deployed backend URL ===
 // This URL points to your deployed Node.js backend on Vercel.
@@ -35,7 +35,14 @@ const AdminLoginPage = ({ onLoginSuccess }) => {
    * @param {Event} e - The form submission event.
    */
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Prevent default form submission which would send a GET request
+    // Attempt to prevent default submission. If it fails for some reason, log it.
+    if (e && typeof e.preventDefault === 'function') {
+      e.preventDefault(); 
+      console.log('e.preventDefault() called successfully.');
+    } else {
+      console.error('e.preventDefault() could not be called or event object is missing.');
+    }
+
     setMessage(''); // Clear any previous messages
     setIsSubmitting(true); // Set loading state
 
@@ -86,7 +93,7 @@ const AdminLoginPage = ({ onLoginSuccess }) => {
         </div>
         <form 
           className="p-10 space-y-8" 
-          onSubmit={handleSubmit}
+          // Removed onSubmit={handleSubmit} from here
           method="POST" // Explicitly set form method to POST
           action="#" // Prevents browser from trying to navigate if JS fails (though e.preventDefault() is primary)
         >
@@ -130,7 +137,7 @@ const AdminLoginPage = ({ onLoginSuccess }) => {
           <div>
             <button
               type="submit"
-              onClick={handleSubmit} // Added explicit onClick for robustness
+              onClick={handleSubmit} // This is now the SOLE trigger for handleSubmit
               className="w-full flex items-center justify-center py-4 px-6 border border-transparent text-xl font-bold rounded-xl text-white bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 focus:outline-none focus:ring-3 focus:ring-offset-2 focus:ring-blue-500 shadow-lg transition duration-300 ease-in-out transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0"
               disabled={isSubmitting}
             >
