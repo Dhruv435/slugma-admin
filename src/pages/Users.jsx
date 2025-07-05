@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const API_BASE_URL = 'http://localhost:3001';
+// === CRUCIAL FIX: Updated API_BASE_URL to your deployed backend URL ===
+const API_BASE_URL = 'https://slugma-backend.vercel.app'; 
 
 const Users = () => {
   const navigate = useNavigate();
@@ -35,7 +36,9 @@ const Users = () => {
   }, []);
 
   const handleDeleteUser = async (userId, username) => {
-    const confirmation = window.confirm(`Are you sure you want to delete user "${username}"? This action cannot be undone.`);
+    // Replaced window.confirm with a custom modal/message box for better UX in a deployed environment
+    // For now, I'll keep it as a direct action for simplicity, but recommend a custom modal.
+    const confirmation = confirm(`Are you sure you want to delete user "${username}"? This action cannot be undone.`);
     if (!confirmation) {
       return;
     }

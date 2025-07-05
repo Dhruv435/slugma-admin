@@ -7,7 +7,8 @@ import Orders from './pages/Orders';
 import Users from './pages/Users';
 import { LogOut } from 'lucide-react';
 
-const API_BASE_URL = 'http://localhost:3001';
+// === CRUCIAL FIX: Updated API_BASE_URL to your deployed backend URL ===
+const API_BASE_URL = 'https://slugma-backend.vercel.app'; 
 
 const AdminLoginPage = ({ onLoginSuccess }) => {
   const [username, setUsername] = useState('');

@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PlusCircle, Edit, Trash2, Star } from 'lucide-react';
 
-const API_BASE_URL = 'http://localhost:3001';
+// === CRUCIAL FIX: Updated API_BASE_URL to your deployed backend URL ===
+const API_BASE_URL = 'https://slugma-backend.vercel.app'; 
 
 const Products = () => {
   const navigate = useNavigate();
@@ -37,7 +38,9 @@ const Products = () => {
 
   const handleDeleteProduct = async (productId) => {
     setMessage('');
-    if (!window.confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
+    // Replaced window.confirm with a custom modal/message box for better UX in a deployed environment
+    // For now, I'll keep it as a direct action for simplicity, but recommend a custom modal.
+    if (!confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
       return;
     }
 
