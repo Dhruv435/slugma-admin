@@ -6,6 +6,7 @@ import AddProduct from './pages/AddProduct';
 import Orders from './pages/Orders';
 import Users from './pages/Users';
 import { LogOut } from 'lucide-react';
+import axios from 'axios'; // Import axios
 
 // === CRUCIAL FIX: Updated API_BASE_URL to your deployed backend URL ===
 // This URL points to your deployed Node.js backend on Vercel.
@@ -14,7 +15,7 @@ const API_BASE_URL = 'https://slugma-backend.vercel.app';
 /**
  * AdminLoginPage Component
  * Handles the login form and authentication for administrators.
- * It sends a POST request to the backend's admin login endpoint.
+ * It sends a POST request to the backend's admin login endpoint using Axios.
  * @param {object} props - Component props.
  * @param {function} props.onLoginSuccess - Callback function to run on successful login.
  */
@@ -26,7 +27,7 @@ const AdminLoginPage = ({ onLoginSuccess }) => {
 
   /**
    * Handles the form submission for admin login.
-   * Prevents default form submission to handle it via fetch API.
+   * Prevents default form submission to handle it via Axios.
    * Sends username and password to the backend.
    * @param {Event} e - The form submission event.
    */
@@ -36,34 +37,38 @@ const AdminLoginPage = ({ onLoginSuccess }) => {
     setIsSubmitting(true); // Set loading state
 
     // --- Debugging logs to confirm request details before sending ---
-    console.log('--- Admin Login Attempt ---');
+    console.log('--- Admin Login Attempt (using Axios) ---');
     console.log('API URL:', `${API_BASE_URL}/api/admin/login`);
     console.log('Request Method: POST'); // Explicitly state the intended method
     console.log('Payload (username only):', { username }); // Log username, avoid logging password for security
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/admin/login`, {
-        method: 'POST', // Explicitly set the request method to POST
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }), // Send credentials as JSON
+      // Use axios.post to send the request
+      const response = await axios.post(`${API_BASE_URL}/api/admin/login`, {
+        username, // Axios automatically serializes this to JSON
+        password,
+      }, {
+        headers: {
+          'Content-Type': 'application/json', // Ensure content type is set
+        },
       });
 
-      const result = await response.json(); // Parse the JSON response
+      // Axios wraps the response data in a 'data' property
+      const result = response.data; 
 
-      if (!response.ok) {
-        // If response status is not 2xx, throw an error with the backend message
-        throw new Error(result.message || 'Login failed!');
-      }
-
-      // On successful login, store token (if any) and call success callback
+      // Axios throws an error for non-2xx status codes, so we don't need response.ok check here
       localStorage.setItem('adminToken', result.token); // Store the admin token
       onLoginSuccess(); // Notify parent component of successful login
       console.log('✅ Admin login successful!');
 
     } catch (err) {
-      // Catch and display any errors during the fetch operation
+      // Axios errors have a 'response' property for server errors
       console.error('❌ Admin Login Error:', err);
-      setMessage(`❌ ${err.message}`); // Display error message to the user
+      if (err.response && err.response.data && err.response.data.message) {
+        setMessage(`❌ ${err.response.data.message}`); // Display backend error message
+      } else {
+        setMessage(`❌ Login failed: ${err.message || 'Network error'}`); // Display generic error
+      }
     } finally {
       setIsSubmitting(false); // Reset loading state
     }
@@ -76,7 +81,12 @@ const AdminLoginPage = ({ onLoginSuccess }) => {
           <h2 className="text-5xl font-extrabold mb-3 tracking-tight">Admin Portal</h2>
           <p className="text-blue-100 text-xl font-light">Secure Access</p>
         </div>
-        <form className="p-10 space-y-8" onSubmit={handleSubmit}>
+        <form 
+          className="p-10 space-y-8" 
+          onSubmit={handleSubmit}
+          method="POST" // Explicitly set form method to POST
+          action="#" // Prevents browser from trying to navigate if JS fails (though e.preventDefault() is primary)
+        >
           <div className="space-y-6">
             <div>
               <label htmlFor="username" className="block text-base font-semibold text-gray-700 mb-2">Username</label>

@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "axios": "^1.10.0",
     "framer-motion": "^12.19.3",
     "gsap": "^3.13.0",
     "lucide-react": "^0.525.0",
